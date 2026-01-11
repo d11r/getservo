@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@nut-tree/nut-js": "^4.2.0",
     "@servo/shared": "workspace:*",
     "electron-updater": "^6.1.7"
   },
