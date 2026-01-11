@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@servo/shared": ["../../packages/shared/src"]
     }
   },
   "include": [
