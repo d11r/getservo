@@ -182,6 +182,58 @@ cp -r packages/mcp-server/build/Servo.app /Applications/
 
 ---
 
+## CI/CD & Releases
+
+### GitHub Actions
+
+The release workflow (`.github/workflows/release.yml`) builds binaries for all platforms when a version tag is pushed.
+
+**Platforms built:**
+- macOS ARM64 (Apple Silicon) - `macos-14` runner
+- macOS x64 (Intel) - `macos-15-intel` runner
+- Windows x64 - `windows-latest` runner
+
+**Build outputs:**
+- `Servo-macos-arm64.zip` - macOS .app bundle for Apple Silicon
+- `Servo-macos-x64.zip` - macOS .app bundle for Intel
+- `Servo.exe` - Windows executable
+
+### Creating a Release
+
+```bash
+# 1. Commit all changes
+git add -A && git commit -m "Release v0.x.x"
+
+# 2. Create a version tag
+git tag v0.x.x
+
+# 3. Push commit and tag
+git push origin main --tags
+```
+
+The workflow will:
+1. Build on all three platforms in parallel
+2. Create a GitHub Release with all artifacts
+3. Generate release notes automatically
+
+### Download Links
+
+The website download page (`apps/web/app/download/page.tsx`) uses GitHub's "latest release" redirect URLs:
+
+```
+https://github.com/d11r/getservo/releases/latest/download/Servo-macos-arm64.zip
+https://github.com/d11r/getservo/releases/latest/download/Servo-macos-x64.zip
+https://github.com/d11r/getservo/releases/latest/download/Servo.exe
+```
+
+These automatically point to the latest release assets.
+
+### Website Deployment
+
+The website (`apps/web`) deploys to Vercel automatically on push to `main`. No manual deployment needed.
+
+---
+
 ## Implementation Status
 
 | Component | Status |
