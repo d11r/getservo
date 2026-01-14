@@ -192,8 +192,8 @@ cp -r packages/mcp-server/build/Servo.app /Applications/
 | Windows automation | ✅ Complete |
 | Node.js SEA build | ✅ Complete |
 | .app bundle generator | ✅ Complete |
-| Website (landing page) | ⏳ Needs update |
-| GitHub Actions CI | ⏳ Not started |
+| Website (landing page) | ✅ Complete |
+| GitHub Actions CI | ✅ Complete |
 | Code signing & notarization | ⏳ Not started |
 
 ## Verification Checklist

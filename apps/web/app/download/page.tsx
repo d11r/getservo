@@ -8,6 +8,15 @@ export const metadata: Metadata = {
     "Download Servo for macOS or Windows. Give AI the ability to see and control your desktop.",
 };
 
+const GITHUB_REPO = "d11r/getservo";
+const RELEASE_BASE = `https://github.com/${GITHUB_REPO}/releases/latest/download`;
+
+const downloads = {
+  macosArm64: `${RELEASE_BASE}/Servo-macos-arm64.zip`,
+  macosX64: `${RELEASE_BASE}/Servo-macos-x64.zip`,
+  windows: `${RELEASE_BASE}/Servo.exe`,
+};
+
 export default function DownloadPage() {
   return (
     <div className="min-h-screen">
@@ -21,39 +30,53 @@ export default function DownloadPage() {
             Choose your platform to get started. Servo is free and open source.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <button
-              disabled
-              className="inline-flex h-12 w-56 cursor-not-allowed items-center justify-center rounded-lg bg-accent/50 px-6 text-sm font-medium text-white"
+            <a
+              href={downloads.macosArm64}
+              className="inline-flex h-12 w-56 items-center justify-center rounded-lg bg-accent px-6 text-sm font-medium text-white transition-colors hover:bg-accent/90"
             >
               <span className="flex flex-col items-start">
                 <span className="text-xs opacity-80">Download for</span>
                 <span>macOS (Apple Silicon)</span>
               </span>
-            </button>
-            <button
-              disabled
-              className="inline-flex h-12 w-56 cursor-not-allowed items-center justify-center rounded-lg bg-accent/50 px-6 text-sm font-medium text-white"
+            </a>
+            <a
+              href={downloads.macosX64}
+              className="inline-flex h-12 w-56 items-center justify-center rounded-lg bg-accent px-6 text-sm font-medium text-white transition-colors hover:bg-accent/90"
             >
               <span className="flex flex-col items-start">
                 <span className="text-xs opacity-80">Download for</span>
                 <span>macOS (Intel)</span>
               </span>
-            </button>
+            </a>
           </div>
           <div className="mt-3">
-            <button
-              disabled
-              className="inline-flex h-12 w-56 cursor-not-allowed items-center justify-center rounded-lg border border-foreground/20 px-6 text-sm font-medium opacity-50"
+            <a
+              href={downloads.windows}
+              className="inline-flex h-12 w-56 items-center justify-center rounded-lg border border-foreground/20 px-6 text-sm font-medium transition-colors hover:bg-foreground/5"
             >
               <span className="flex flex-col items-start">
                 <span className="text-xs opacity-80">Download for</span>
                 <span>Windows</span>
               </span>
-            </button>
+            </a>
           </div>
-          <p className="mt-6 text-sm text-muted">
-            Downloads coming soon. Star the repository on GitHub to get notified
-            when releases are available.
+          <p className="mt-8 text-sm text-muted">
+            After downloading, see the{" "}
+            <a
+              href="https://github.com/d11r/getservo#installation"
+              className="underline hover:text-foreground"
+            >
+              installation guide
+            </a>{" "}
+            for setup instructions.
+          </p>
+          <p className="mt-2 text-xs text-muted">
+            <a
+              href={`https://github.com/${GITHUB_REPO}/releases`}
+              className="underline hover:text-foreground"
+            >
+              View all releases on GitHub
+            </a>
           </p>
         </div>
       </main>

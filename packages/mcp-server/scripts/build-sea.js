@@ -85,9 +85,9 @@ if (process.platform === 'darwin') {
     // Ignore if no signature exists
   }
 
-  // Inject using npx postject
+  // Inject using pnpm exec postject (uses local dependency)
   execSync(
-    `npx postject "${outputBinary}" NODE_SEA_BLOB "${blobPath}" --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA`,
+    `pnpm exec postject "${outputBinary}" NODE_SEA_BLOB "${blobPath}" --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA`,
     { cwd: rootDir, stdio: 'inherit' }
   )
 
@@ -98,14 +98,14 @@ if (process.platform === 'darwin') {
   // Windows: Use postject directly
   console.log('  Platform: Windows')
   execSync(
-    `npx postject "${outputBinary}" NODE_SEA_BLOB "${blobPath}" --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`,
+    `pnpm exec postject "${outputBinary}" NODE_SEA_BLOB "${blobPath}" --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`,
     { cwd: rootDir, stdio: 'inherit' }
   )
 } else {
   // Linux: Use postject directly
   console.log('  Platform: Linux')
   execSync(
-    `npx postject "${outputBinary}" NODE_SEA_BLOB "${blobPath}" --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`,
+    `pnpm exec postject "${outputBinary}" NODE_SEA_BLOB "${blobPath}" --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`,
     { cwd: rootDir, stdio: 'inherit' }
   )
 }
