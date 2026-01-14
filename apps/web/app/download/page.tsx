@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { DownloadButtons } from "@/components/DownloadButtons";
 
 export const metadata: Metadata = {
   title: "Download Servo",
@@ -9,13 +10,6 @@ export const metadata: Metadata = {
 };
 
 const GITHUB_REPO = "d11r/getservo";
-const RELEASE_BASE = `https://github.com/${GITHUB_REPO}/releases/latest/download`;
-
-const downloads = {
-  macosArm64: `${RELEASE_BASE}/Servo-macos-arm64.zip`,
-  macosX64: `${RELEASE_BASE}/Servo-macos-x64.zip`,
-  windows: `${RELEASE_BASE}/Servo.exe`,
-};
 
 export default function DownloadPage() {
   return (
@@ -29,36 +23,8 @@ export default function DownloadPage() {
           <p className="mt-4 text-base text-muted">
             Choose your platform to get started. Servo is free and open source.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a
-              href={downloads.macosArm64}
-              className="inline-flex h-12 w-56 items-center justify-center rounded-lg bg-accent px-6 text-sm font-medium text-white transition-colors hover:bg-accent/90"
-            >
-              <span className="flex flex-col items-start">
-                <span className="text-xs opacity-80">Download for</span>
-                <span>macOS (Apple Silicon)</span>
-              </span>
-            </a>
-            <a
-              href={downloads.macosX64}
-              className="inline-flex h-12 w-56 items-center justify-center rounded-lg bg-accent px-6 text-sm font-medium text-white transition-colors hover:bg-accent/90"
-            >
-              <span className="flex flex-col items-start">
-                <span className="text-xs opacity-80">Download for</span>
-                <span>macOS (Intel)</span>
-              </span>
-            </a>
-          </div>
-          <div className="mt-3">
-            <a
-              href={downloads.windows}
-              className="inline-flex h-12 w-56 items-center justify-center rounded-lg border border-foreground/20 px-6 text-sm font-medium transition-colors hover:bg-foreground/5"
-            >
-              <span className="flex flex-col items-start">
-                <span className="text-xs opacity-80">Download for</span>
-                <span>Windows</span>
-              </span>
-            </a>
+          <div className="mt-8">
+            <DownloadButtons />
           </div>
           <p className="mt-8 text-sm text-muted">
             After downloading, see the{" "}
