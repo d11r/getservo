@@ -6,35 +6,13 @@ on:
       - 'v*'
 
 permissions:
-  id-token: write
   contents: write
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
-    environment: npm
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build MCP server
-        run: pnpm build:mcp
-
-      - name: Publish to npm
-        run: |
-          cd packages/mcp-server
-          npm publish --access public --provenance
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
