@@ -1,23 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
-type Platform = "macos" | "windows" | null;
-
-function detectOS(): Platform {
-  if (typeof window === "undefined") return null;
-
-  const ua = navigator.userAgent.toLowerCase();
-  const platform = navigator.platform?.toLowerCase() || "";
-
-  if (ua.includes("win") || platform.includes("win")) {
-    return "windows";
-  }
-  if (ua.includes("mac") || platform.includes("mac")) {
-    return "macos";
-  }
-  return null;
-}
+import { useState } from "react";
 
 function CopyButton({
   text,
@@ -74,80 +57,64 @@ function CopyButton({
   );
 }
 
-const MAC_COMMAND = "curl -fsSL https://getservo.app/install.sh | bash";
-const WIN_COMMAND = "irm https://getservo.app/install.ps1 | iex";
+const INSTALL_COMMAND = "npm install -g servo-mcp";
+const SETUP_COMMAND = "npx servo-mcp --setup";
 
 export function InstallCommands() {
-  const [detectedOS, setDetectedOS] = useState<Platform>(null);
-  const [copiedMac, setCopiedMac] = useState(false);
-  const [copiedWin, setCopiedWin] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [copiedInstall, setCopiedInstall] = useState(false);
+  const [copiedSetup, setCopiedSetup] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    setDetectedOS(detectOS());
-  }, []);
-
-  const handleCopyMac = () => {
-    setCopiedMac(true);
-    setTimeout(() => setCopiedMac(false), 2000);
+  const handleCopyInstall = () => {
+    setCopiedInstall(true);
+    setTimeout(() => setCopiedInstall(false), 2000);
   };
 
-  const handleCopyWin = () => {
-    setCopiedWin(true);
-    setTimeout(() => setCopiedWin(false), 2000);
+  const handleCopySetup = () => {
+    setCopiedSetup(true);
+    setTimeout(() => setCopiedSetup(false), 2000);
   };
-
-  // Order commands based on detected platform
-  const showMacFirst = !mounted || detectedOS !== "windows";
-
-  const macCommand = (
-    <div className="text-left" key="mac">
-      <p className="text-sm text-muted mb-2">
-        macOS (Terminal)
-        {mounted && detectedOS === "macos" && (
-          <span className="ml-2 text-xs text-green-400">Detected</span>
-        )}
-      </p>
-      <div className="flex items-center justify-between rounded-lg bg-slate-900 px-4 py-3 font-mono text-sm">
-        <code className="text-green-400 overflow-x-auto whitespace-nowrap">
-          {MAC_COMMAND}
-        </code>
-        <CopyButton text={MAC_COMMAND} copied={copiedMac} onCopy={handleCopyMac} />
-      </div>
-    </div>
-  );
-
-  const winCommand = (
-    <div className="text-left" key="win">
-      <p className="text-sm text-muted mb-2">
-        Windows (PowerShell)
-        {mounted && detectedOS === "windows" && (
-          <span className="ml-2 text-xs text-green-400">Detected</span>
-        )}
-      </p>
-      <div className="flex items-center justify-between rounded-lg bg-slate-900 px-4 py-3 font-mono text-sm">
-        <code className="text-green-400 overflow-x-auto whitespace-nowrap">
-          {WIN_COMMAND}
-        </code>
-        <CopyButton text={WIN_COMMAND} copied={copiedWin} onCopy={handleCopyWin} />
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-4 w-full max-w-xl mx-auto">
-      {showMacFirst ? (
-        <>
-          {macCommand}
-          {winCommand}
-        </>
-      ) : (
-        <>
-          {winCommand}
-          {macCommand}
-        </>
-      )}
+      {/* Step 1: Install */}
+      <div className="text-left">
+        <p className="text-sm text-muted mb-2">1. Install globally via npm</p>
+        <div className="flex items-center justify-between rounded-lg bg-slate-900 px-4 py-3 font-mono text-sm">
+          <code className="text-green-400 overflow-x-auto whitespace-nowrap">
+            {INSTALL_COMMAND}
+          </code>
+          <CopyButton
+            text={INSTALL_COMMAND}
+            copied={copiedInstall}
+            onCopy={handleCopyInstall}
+          />
+        </div>
+      </div>
+
+      {/* Step 2: Setup */}
+      <div className="text-left">
+        <p className="text-sm text-muted mb-2">2. Configure Claude Code</p>
+        <div className="flex items-center justify-between rounded-lg bg-slate-900 px-4 py-3 font-mono text-sm">
+          <code className="text-green-400 overflow-x-auto whitespace-nowrap">
+            {SETUP_COMMAND}
+          </code>
+          <CopyButton
+            text={SETUP_COMMAND}
+            copied={copiedSetup}
+            onCopy={handleCopySetup}
+          />
+        </div>
+      </div>
+
+      {/* Alternative: npx */}
+      <div className="text-center pt-4">
+        <p className="text-xs text-muted">
+          Or use npx without installing:{" "}
+          <code className="bg-foreground/10 px-1.5 py-0.5 rounded">
+            npx servo-mcp --setup
+          </code>
+        </p>
+      </div>
     </div>
   );
 }

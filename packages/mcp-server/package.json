@@ -1,19 +1,47 @@
 {
-  "name": "@servo/mcp-server",
+  "name": "servo-mcp",
   "version": "0.1.0",
-  "private": true,
+  "description": "Desktop MCP server for AI agents - screenshots, clicks, typing, and more on macOS and Windows",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "servo-mcp": "./dist/index.js"
+    "servo-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "claude-code",
+    "desktop-automation",
+    "screenshot",
+    "macos",
+    "windows",
+    "ai-agent",
+    "automation",
+    "screen-control"
+  ],
+  "author": "Dragos Strugar <contact@dragosstrugar.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/d11r/getservo.git"
+  },
+  "homepage": "https://getservo.app",
+  "bugs": {
+    "url": "https://github.com/d11r/getservo/issues"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --banner:js=\"#!/usr/bin/env node\"",
-    "build:cjs": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/index.cjs",
-    "build:sea": "node scripts/build-sea.js",
-    "build:app": "node scripts/build-app.js",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/index.js --banner:js=\"#!/usr/bin/env node\"",
     "dev": "node --import tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -22,7 +50,6 @@
   "devDependencies": {
     "@types/node": "^20",
     "esbuild": "^0.20.0",
-    "postject": "^1.0.0-alpha.6",
     "tsx": "^4.7.0",
     "typescript": "^5"
   }

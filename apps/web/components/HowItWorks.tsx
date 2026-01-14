@@ -1,20 +1,20 @@
 const steps = [
   {
     step: "1",
-    title: "Download Servo",
-    description: "Get the app for macOS or Windows. It's free and open source.",
+    title: "Install via npm",
+    description: "Run npm install -g servo-mcp. Works on macOS and Windows.",
   },
   {
     step: "2",
     title: "Grant Permissions",
     description:
-      "Allow screen recording and accessibility access when prompted.",
+      "On macOS, enable Accessibility and Screen Recording for your terminal app.",
   },
   {
     step: "3",
-    title: "Add to Claude",
+    title: "Run Setup",
     description:
-      "Configure Claude Code to use Servo as an MCP server. That's it.",
+      "Run npx servo-mcp --setup to configure Claude Code. That's it.",
   },
 ];
 

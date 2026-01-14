@@ -1,14 +1,13 @@
 /**
- * Setup command for Servo
+ * Setup command for servo-mcp
  *
- * Configures Claude Code to use Servo as an MCP server.
- * Run with: Servo --setup
+ * Configures Claude Code to use servo-mcp as an MCP server.
+ * Run with: npx servo-mcp --setup
  */
 
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { execSync } from 'child_process'
 
 interface ClaudeConfig {
   mcpServers?: Record<string, { command: string; args?: string[] }>
@@ -19,14 +18,9 @@ export async function runSetup(): Promise<void> {
   const platform = os.platform()
   const configPath = path.join(os.homedir(), '.claude.json')
 
-  // Determine executable path based on platform
-  let exePath: string
-  if (platform === 'win32') {
-    const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
-    exePath = path.join(localAppData, 'Servo', 'Servo.exe')
-  } else {
-    exePath = '/Applications/Servo.app/Contents/MacOS/Servo'
-  }
+  // Use npx to run servo-mcp - works for both global and local installs
+  const command = 'npx'
+  const args = ['servo-mcp']
 
   // Read existing config or create new
   let config: ClaudeConfig = {}
@@ -47,7 +41,8 @@ export async function runSetup(): Promise<void> {
     config.mcpServers = {}
   }
   config.mcpServers.servo = {
-    command: exePath
+    command,
+    args
   }
 
   // Write config
@@ -55,34 +50,19 @@ export async function runSetup(): Promise<void> {
 
   // Print success message
   console.log('')
-  console.log('\x1b[32m%s\x1b[0m', 'Servo installed and configured!')
+  console.log('\x1b[32m%s\x1b[0m', 'servo-mcp configured for Claude Code!')
   console.log('')
 
   if (platform === 'darwin') {
-    console.log('Opening System Settings for permissions...')
+    console.log('\x1b[1mIMPORTANT: Grant permissions to your terminal app\x1b[0m')
     console.log('')
-
-    // Open both permission panes - Screen Recording first, then Accessibility
-    try {
-      // Open Screen Recording pane
-      execSync('open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"', {
-        stdio: 'ignore'
-      })
-
-      // Wait a moment, then open Accessibility pane (will open in new window or tab)
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      execSync('open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"', {
-        stdio: 'ignore'
-      })
-    } catch {
-      // Ignore errors opening System Preferences
-    }
-
-    console.log('Please enable Servo in both:')
+    console.log('Open System Settings > Privacy & Security and enable your terminal')
+    console.log('(Terminal, iTerm, VS Code, Cursor, etc.) for:')
     console.log('')
     console.log('  1. \x1b[1mAccessibility\x1b[0m - allows clicking and typing')
     console.log('  2. \x1b[1mScreen Recording\x1b[0m - allows screenshots')
+    console.log('')
+    console.log('Child processes (like servo-mcp) inherit permissions from the parent app.')
     console.log('')
     console.log('Then restart Claude Code and test with: "take a screenshot"')
     console.log('')
@@ -93,7 +73,7 @@ export async function runSetup(): Promise<void> {
     console.log('')
     console.log('2. Test with: "take a screenshot"')
     console.log('')
-    console.log('Note: Windows may prompt for permissions when Servo runs.')
+    console.log('Note: Windows may prompt for permissions when servo-mcp runs.')
     console.log('')
   } else {
     console.log('Next steps:')

@@ -1,8 +1,8 @@
-# Servo
+# servo-mcp
 
 A desktop MCP server that gives AI agents the ability to see and control your desktop.
 
-**[getservo.app](https://getservo.app)** - Download, documentation, and more info
+**[getservo.app](https://getservo.app)** - Installation instructions and documentation
 
 ## What is Servo?
 
@@ -18,51 +18,46 @@ Servo is an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) serv
 - 100% local - no cloud, no telemetry, no data sharing
 - Works on macOS and Windows
 - Pure Node.js with native platform APIs (no Electron, no external dependencies)
-- Simple setup with Claude Code
+- Simple npm install
 
 ## Installation
 
-Download the latest release from **[getservo.app/download](https://getservo.app/download)**
+Install via npm (macOS and Windows):
 
-Or build from source:
 ```bash
-pnpm install
-pnpm build:mcp:sea    # Build standalone binary
-pnpm build:mcp:app    # Create .app bundle
-cp -r packages/mcp-server/build/Servo.app /Applications/
+npm install -g servo-mcp
+npx servo-mcp --setup
 ```
 
-After installing, grant the required permissions (macOS only):
+### macOS Permissions
+
+Grant permissions to your **terminal app** (Terminal, iTerm, VS Code, Cursor, etc.) in **System Settings > Privacy & Security**:
+
 - **Accessibility** - for mouse clicks and keyboard input
 - **Screen Recording** - for taking screenshots
-- **Automation** - for controlling System Events
+
+Child processes like servo-mcp inherit permissions from the parent terminal app.
+
+### Windows
+
+No special permissions required. Windows may prompt for access when servo-mcp runs.
 
 ## Setup with Claude Code
 
-Add to your `~/.claude.json` or project `.mcp.json`:
+After running `npx servo-mcp --setup`, your `~/.claude.json` will be configured:
 
 ```json
 {
   "mcpServers": {
     "servo": {
-      "command": "/Applications/Servo.app/Contents/MacOS/Servo"
+      "command": "npx",
+      "args": ["servo-mcp"]
     }
   }
 }
 ```
 
-For Windows:
-```json
-{
-  "mcpServers": {
-    "servo": {
-      "command": "C:\\Program Files\\Servo\\Servo.exe"
-    }
-  }
-}
-```
-
-See **[getservo.app](https://getservo.app)** for detailed setup instructions.
+Restart Claude Code and test with: "take a screenshot"
 
 ## Available Tools
 
@@ -90,24 +85,19 @@ pnpm dev:web          # Run website
 
 # Build
 pnpm build:mcp        # Bundle with esbuild
-pnpm build:mcp:sea    # Build standalone binary (Node.js SEA)
-pnpm build:mcp:app    # Create macOS .app bundle
 ```
 
 ## Architecture
 
 Servo is a pure Node.js MCP server that uses:
-- **Node.js SEA** (Single Executable Application) to create a standalone binary
 - **Native platform APIs** for automation (no Electron)
 - macOS: `screencapture`, AppleScript, Python/Quartz
 - Windows: PowerShell, .NET, user32.dll
 
-The .app bundle is required on macOS for proper permission handling in System Preferences.
-
 ## Links
 
 - **Website:** [getservo.app](https://getservo.app)
-- **Download:** [getservo.app/download](https://getservo.app/download)
+- **npm:** [npmjs.com/package/servo-mcp](https://www.npmjs.com/package/servo-mcp)
 - **GitHub:** [github.com/d11r/getservo](https://github.com/d11r/getservo)
 
 ## License

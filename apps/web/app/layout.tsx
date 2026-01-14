@@ -14,10 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Servo - Desktop MCP Server for AI Agents | macOS & Windows",
+  title: "servo-mcp | Desktop MCP Server for AI Agents | macOS & Windows",
   description:
-    "Servo is a desktop MCP server that gives Claude Code tools to take screenshots, click buttons, type text, and verify its work on your desktop. Open source, 100% local, no telemetry.",
+    "servo-mcp is a desktop MCP server for Claude Code. Take screenshots, click buttons, type text, and verify AI work on macOS and Windows. Install via npm. Open source, 100% local, no telemetry.",
   keywords: [
+    "servo-mcp",
     "MCP server",
     "desktop MCP server",
     "Model Context Protocol",
@@ -29,8 +30,12 @@ export const metadata: Metadata = {
     "open source",
     "macOS",
     "Windows",
+    "npm package",
+    "cross-platform",
     "desktop control",
     "AI verification",
+    "screenshot",
+    "automation",
   ],
   authors: [{ name: "Dragos Strugar", url: "https://dragosstrugar.com" }],
   creator: "Dragos Strugar",
@@ -39,16 +44,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://getservo.app",
-    siteName: "Servo",
-    title: "Servo - Desktop MCP Server for AI Agents",
+    siteName: "servo-mcp",
+    title: "servo-mcp - Desktop MCP Server for AI Agents",
     description:
-      "A desktop MCP server that gives Claude Code tools to take screenshots, click buttons, and verify its work. Open source, 100% local, no telemetry.",
+      "A desktop MCP server for Claude Code. Take screenshots, click buttons, and verify AI work on macOS and Windows. Install via npm. Open source, 100% local, no telemetry.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Servo - Desktop MCP Server for AI Agents",
+    title: "servo-mcp - Desktop MCP Server for AI Agents",
     description:
-      "A desktop MCP server that gives Claude Code tools to take screenshots, click buttons, and verify its work. Open source, 100% local, no telemetry.",
+      "A desktop MCP server for Claude Code. Take screenshots, click buttons, and verify AI work on macOS and Windows. Install via npm. Open source, 100% local, no telemetry.",
   },
   robots: {
     index: true,

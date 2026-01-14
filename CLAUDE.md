@@ -10,7 +10,7 @@ Servo is an MCP (Model Context Protocol) server that gives AI agents the ability
 - Free and open source (MIT License)
 - Fully local - no telemetry, no cloud, no data sharing
 - Built for agentic workflows, primarily verifying software after implementation
-- Packaged as a macOS .app bundle (using Node.js SEA) for proper permission handling
+- Distributed as an npm package (`servo-mcp`)
 - Author: d11r (Dragos Strugar) - github.com/d11r/servo
 
 ## Repository Structure
@@ -22,7 +22,7 @@ getservo/
 ├── apps/
 │   └── web/              # Marketing website (getservo.app) - Next.js 16
 ├── packages/
-│   ├── mcp-server/       # MCP server (pure Node.js, builds to standalone binary)
+│   ├── mcp-server/       # MCP server (npm package: servo-mcp)
 │   └── shared/           # Shared constants
 ├── pnpm-workspace.yaml
 └── turbo.json
@@ -42,12 +42,14 @@ pnpm dev:mcp          # Run MCP server in dev mode
 # Build
 pnpm build            # Build all
 pnpm build:web        # Build website
-pnpm build:mcp        # Build MCP server (bundled JS)
-pnpm build:mcp:sea    # Build MCP server as standalone binary (Node.js SEA)
-pnpm build:mcp:app    # Build macOS .app bundle
+pnpm build:mcp        # Build MCP server (bundled JS for npm)
 
 # Lint
 pnpm lint             # Lint all packages
+
+# Publish to npm
+cd packages/mcp-server
+npm publish
 ```
 
 ## Website (apps/web)
@@ -56,7 +58,7 @@ Next.js 16 with React 19 and Tailwind CSS 4.
 
 **Key files:**
 - `app/page.tsx` - Landing page
-- `app/download/page.tsx` - Download page with platform detection
+- `app/download/page.tsx` - Installation page (npm instructions)
 - `app/globals.css` - Tailwind v4 styles with `@import "tailwindcss"` and `@theme inline`
 - `components/` - Reusable components (Hero, Features, Footer, etc.)
 
@@ -64,11 +66,10 @@ Next.js 16 with React 19 and Tailwind CSS 4.
 
 ## MCP Server (packages/mcp-server)
 
-Pure Node.js MCP server that builds to a standalone binary using Node.js Single Executable Application (SEA) feature, then wrapped in a macOS .app bundle.
+Pure Node.js MCP server distributed as an npm package.
 
 **Tech stack:**
 - Pure Node.js (no Electron)
-- Node.js SEA for standalone binary
 - @modelcontextprotocol/sdk for MCP protocol
 - esbuild for bundling
 
@@ -77,9 +78,6 @@ Pure Node.js MCP server that builds to a standalone binary using Node.js Single 
 - `src/server.ts` - MCP server setup
 - `src/tools.ts` - Tool definitions and handlers
 - `src/automation/` - Platform-specific automation (macOS, Windows)
-- `scripts/build-sea.js` - Build standalone binary
-- `scripts/build-app.js` - Create macOS .app bundle
-- `install-local.sh` - Quick install script
 
 ### MCP Tools
 
@@ -100,12 +98,13 @@ Pure Node.js MCP server that builds to a standalone binary using Node.js Single 
 
 ### Claude Code Configuration
 
-Add to `~/.claude.json` or project `.mcp.json`:
+After running `npx servo-mcp --setup`, this is added to `~/.claude.json`:
 ```json
 {
   "mcpServers": {
     "servo": {
-      "command": "/Applications/Servo.app/Contents/MacOS/Servo"
+      "command": "npx",
+      "args": ["servo-mcp"]
     }
   }
 }
@@ -125,13 +124,13 @@ The automation layer uses **native platform APIs only** (no external dependencie
 - Mouse/keyboard: user32.dll via PowerShell
 - Window management: PowerShell + Win32 APIs
 
-### Why a .app Bundle?
+### macOS Permissions
 
-macOS requires explicit user permission for:
-- **Accessibility** - clicking, typing, scrolling
-- **Screen Recording** - screenshots
+On macOS, users must grant permissions to their **terminal app** (Terminal, iTerm, VS Code, Cursor, etc.) - not to servo-mcp itself. Child processes inherit permissions from the parent app.
 
-A proper app bundle appears in System Preferences, allowing users to grant these permissions. The app is built using Node.js SEA (Single Executable Application) which embeds Node.js into a standalone binary.
+Required permissions in **System Settings > Privacy & Security**:
+- **Accessibility** - for clicking, typing, scrolling
+- **Screen Recording** - for screenshots
 
 ---
 
@@ -151,82 +150,49 @@ cd packages/mcp-server
 pnpm dev
 ```
 
-### Building the .app Bundle
+### Building and Testing Locally
 
 ```bash
-# Full build process:
-pnpm install
-pnpm build:mcp          # Bundle with esbuild
-pnpm build:mcp:sea      # Create standalone binary with Node.js SEA
-pnpm build:mcp:app      # Create .app bundle
-
-# Or all at once from packages/mcp-server:
+# Build the package
 cd packages/mcp-server
-pnpm build && pnpm build:sea && node scripts/build-app.js
-```
+pnpm build
 
-### Installing the .app
+# Link for local testing
+npm link
 
-```bash
-# Quick install (from packages/mcp-server)
-./install-local.sh
+# Test the setup command
+servo-mcp --setup
 
-# Or manually:
-cp -r packages/mcp-server/build/Servo.app /Applications/
-
-# Grant permissions in System Settings > Privacy & Security:
-# - Accessibility
-# - Screen Recording
-# - Automation (for System Events)
+# Or run directly
+servo-mcp
 ```
 
 ---
 
 ## CI/CD & Releases
 
-### GitHub Actions
+### npm Publishing
 
-The release workflow (`.github/workflows/release.yml`) builds binaries for all platforms when a version tag is pushed.
-
-**Platforms built:**
-- macOS ARM64 (Apple Silicon) - `macos-14` runner
-- macOS x64 (Intel) - `macos-15-intel` runner
-- Windows x64 - `windows-latest` runner
-
-**Build outputs:**
-- `Servo-macos-arm64.zip` - macOS .app bundle for Apple Silicon
-- `Servo-macos-x64.zip` - macOS .app bundle for Intel
-- `Servo.exe` - Windows executable
+The release workflow (`.github/workflows/release.yml`) publishes to npm when a version tag is pushed.
 
 ### Creating a Release
 
 ```bash
-# 1. Commit all changes
+# 1. Update version in packages/mcp-server/package.json
+# 2. Commit all changes
 git add -A && git commit -m "Release v0.x.x"
 
-# 2. Create a version tag
+# 3. Create a version tag
 git tag v0.x.x
 
-# 3. Push commit and tag
+# 4. Push commit and tag
 git push origin main --tags
 ```
 
 The workflow will:
-1. Build on all three platforms in parallel
-2. Create a GitHub Release with all artifacts
-3. Generate release notes automatically
-
-### Download Links
-
-The website download page (`apps/web/app/download/page.tsx`) uses GitHub's "latest release" redirect URLs:
-
-```
-https://github.com/d11r/getservo/releases/latest/download/Servo-macos-arm64.zip
-https://github.com/d11r/getservo/releases/latest/download/Servo-macos-x64.zip
-https://github.com/d11r/getservo/releases/latest/download/Servo.exe
-```
-
-These automatically point to the latest release assets.
+1. Build the package
+2. Publish to npm
+3. Create a GitHub Release
 
 ### Website Deployment
 
@@ -238,21 +204,19 @@ The website (`apps/web`) deploys to Vercel automatically on push to `main`. No m
 
 | Component | Status |
 |-----------|--------|
-| Monorepo structure | ✅ Complete |
-| MCP server (12 tools) | ✅ Complete |
-| macOS automation | ✅ Complete |
-| Windows automation | ✅ Complete |
-| Node.js SEA build | ✅ Complete |
-| .app bundle generator | ✅ Complete |
-| Website (landing page) | ✅ Complete |
-| GitHub Actions CI | ✅ Complete |
-| Code signing & notarization | ⏳ Not started |
+| Monorepo structure | Done |
+| MCP server (12 tools) | Done |
+| macOS automation | Done |
+| Windows automation | Done |
+| npm package publishing | Done |
+| Website (landing page) | Done |
+| GitHub Actions CI | Done |
 
 ## Verification Checklist
 
 **MCP Server:**
-1. Build: `pnpm build:mcp && pnpm build:mcp:sea && pnpm build:mcp:app`
-2. Install: `cp -r packages/mcp-server/build/Servo.app /Applications/`
-3. Grant permissions in System Settings
-4. Add to Claude Code config
+1. Install: `npm install -g servo-mcp`
+2. Setup: `npx servo-mcp --setup`
+3. Grant permissions to your terminal app (macOS only)
+4. Restart Claude Code
 5. Test: Ask Claude to take a screenshot

@@ -5,8 +5,8 @@ import { useState } from "react";
 const configCode = `{
   "mcpServers": {
     "servo": {
-      "command": "/Applications/Servo.app/Contents/MacOS/Servo",
-      "args": ["--mcp"]
+      "command": "npx",
+      "args": ["servo-mcp"]
     }
   }
 }`;

@@ -9,11 +9,9 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "dev:web": "turbo run dev --filter=@servo/web",
-    "dev:mcp": "turbo run dev --filter=@servo/mcp-server",
+    "dev:mcp": "turbo run dev --filter=servo-mcp",
     "build:web": "turbo run build --filter=@servo/web",
-    "build:mcp": "turbo run build --filter=@servo/mcp-server",
-    "build:mcp:sea": "pnpm --filter @servo/mcp-server build:sea",
-    "build:mcp:app": "pnpm --filter @servo/mcp-server build:app"
+    "build:mcp": "turbo run build --filter=servo-mcp"
   },
   "devDependencies": {
     "turbo": "^2.3.3"

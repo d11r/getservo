@@ -7,140 +7,38 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
-  build-macos-arm64:
-    name: Build macOS (Apple Silicon)
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build MCP server
-        run: pnpm build:mcp
-
-      - name: Build SEA binary
-        run: pnpm build:mcp:sea
-
-      - name: Build .app bundle
-        run: pnpm build:mcp:app
-
-      - name: Create zip archive
-        run: |
-          cd packages/mcp-server/build
-          zip -r Servo-macos-arm64.zip Servo.app
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-arm64
-          path: packages/mcp-server/build/Servo-macos-arm64.zip
-
-  build-macos-x64:
-    name: Build macOS (Intel)
-    runs-on: macos-15-intel
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build MCP server
-        run: pnpm build:mcp
-
-      - name: Build SEA binary
-        run: pnpm build:mcp:sea
-
-      - name: Build .app bundle
-        run: pnpm build:mcp:app
-
-      - name: Create zip archive
-        run: |
-          cd packages/mcp-server/build
-          zip -r Servo-macos-x64.zip Servo.app
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-x64
-          path: packages/mcp-server/build/Servo-macos-x64.zip
-
-  build-windows:
-    name: Build Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build MCP server
-        run: pnpm build:mcp
-
-      - name: Build SEA binary
-        run: pnpm build:mcp:sea
-
-      - name: Rename binary
-        run: |
-          cd packages/mcp-server/build
-          ren servo Servo.exe
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-x64
-          path: packages/mcp-server/build/Servo.exe
-
-  release:
-    name: Create Release
-    needs: [build-macos-arm64, build-macos-x64, build-windows]
+  publish:
+    name: Publish to npm
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
 
-      - name: List artifacts
-        run: find artifacts -type f
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build MCP server
+        run: pnpm build:mcp
+
+      - name: Publish to npm
+        run: |
+          cd packages/mcp-server
+          npm publish --access public
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           draft: false
           generate_release_notes: true
-          files: |
-            artifacts/macos-arm64/Servo-macos-arm64.zip
-            artifacts/macos-x64/Servo-macos-x64.zip
-            artifacts/windows-x64/Servo.exe
