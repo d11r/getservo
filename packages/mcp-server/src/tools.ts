@@ -1,6 +1,7 @@
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import * as automation from './automation/index.js'
+import { accessibility } from './automation/index.js'
 import { APP_NAME } from './types.js'
 
 const execAsync = promisify(exec)
@@ -184,6 +185,92 @@ export const toolDefinitions = [
       },
       required: ['ms']
     }
+  },
+  // Accessibility-based tools
+  {
+    name: 'list_ui_elements',
+    description:
+      'List UI elements (buttons, text fields, etc.) in the frontmost app. Returns elements with their roles, titles, and screen coordinates. Much faster than screenshot + vision for finding clickable elements.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        app: {
+          type: 'string',
+          description: 'Application name (optional, defaults to frontmost app)'
+        },
+        role: {
+          type: 'string',
+          description:
+            'Filter by element role (e.g., "button", "textfield", "checkbox"). Optional.'
+        }
+      }
+    }
+  },
+  {
+    name: 'click_element',
+    description:
+      'Click a UI element by its title, role, or identifier. Uses the accessibility API to find and click elements without needing coordinates. More reliable than coordinate-based clicking.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        title: {
+          type: 'string',
+          description: 'Element title/label to match (case-insensitive, partial match)'
+        },
+        role: {
+          type: 'string',
+          description: 'Element role to match (e.g., "button", "textfield")'
+        },
+        identifier: {
+          type: 'string',
+          description: 'Element accessibility identifier to match'
+        }
+      }
+    }
+  },
+  {
+    name: 'get_element_text',
+    description:
+      'Get the text content of a UI element by its title, role, or identifier. Useful for reading text from labels, text fields, or other elements.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        title: {
+          type: 'string',
+          description: 'Element title/label to match'
+        },
+        role: {
+          type: 'string',
+          description: 'Element role to match'
+        },
+        identifier: {
+          type: 'string',
+          description: 'Element accessibility identifier to match'
+        }
+      }
+    }
+  },
+  {
+    name: 'focus_element',
+    description:
+      'Focus a UI element (like a text field) by its title, role, or identifier. Useful for placing the cursor in a specific input field before typing.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        title: {
+          type: 'string',
+          description: 'Element title/label to match'
+        },
+        role: {
+          type: 'string',
+          description: 'Element role to match'
+        },
+        identifier: {
+          type: 'string',
+          description: 'Element accessibility identifier to match'
+        }
+      }
+    }
   }
 ]
 
@@ -338,6 +425,52 @@ After granting permissions, you may need to restart Claude Code for changes to t
         await automation.wait(ms)
         return {
           content: [{ type: 'text', text: `Waited ${ms}ms` }]
+        }
+      }
+
+      // Accessibility-based tools
+      case 'list_ui_elements': {
+        const appName = args.app as string | undefined
+        const role = args.role as string | undefined
+        const elements = await accessibility.listElements({ appName, role })
+        return {
+          content: [{ type: 'text', text: JSON.stringify(elements, null, 2) }]
+        }
+      }
+
+      case 'click_element': {
+        const title = args.title as string | undefined
+        const role = args.role as string | undefined
+        const identifier = args.identifier as string | undefined
+        await accessibility.clickElement({ title, role, identifier })
+        const desc = [title && `title="${title}"`, role && `role="${role}"`, identifier && `id="${identifier}"`]
+          .filter(Boolean)
+          .join(', ')
+        return {
+          content: [{ type: 'text', text: `Clicked element: ${desc}` }]
+        }
+      }
+
+      case 'get_element_text': {
+        const title = args.title as string | undefined
+        const role = args.role as string | undefined
+        const identifier = args.identifier as string | undefined
+        const text = await accessibility.getElementText({ title, role, identifier })
+        return {
+          content: [{ type: 'text', text: `Element text: "${text}"` }]
+        }
+      }
+
+      case 'focus_element': {
+        const title = args.title as string | undefined
+        const role = args.role as string | undefined
+        const identifier = args.identifier as string | undefined
+        await accessibility.focusElement({ title, role, identifier })
+        const desc = [title && `title="${title}"`, role && `role="${role}"`, identifier && `id="${identifier}"`]
+          .filter(Boolean)
+          .join(', ')
+        return {
+          content: [{ type: 'text', text: `Focused element: ${desc}` }]
         }
       }
 

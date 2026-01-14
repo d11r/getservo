@@ -1,4 +1,4 @@
-import type { MousePosition, ScrollDirection, WindowInfo } from './types.js'
+import type { MousePosition, ScrollDirection, WindowInfo } from '../types.js'
 
 /**
  * Platform automation interface.

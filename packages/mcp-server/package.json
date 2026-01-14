@@ -1,7 +1,7 @@
 {
   "name": "servo-mcp",
-  "version": "0.3.5",
-  "description": "Desktop MCP server for AI agents - screenshots, clicks, typing, and more on macOS and Windows",
+  "version": "0.4.0",
+  "description": "Desktop MCP server for AI agents - screenshots, clicks, typing, accessibility, and more on macOS and Windows",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
@@ -9,6 +9,7 @@
   },
   "files": [
     "dist",
+    "bin",
     "README.md"
   ],
   "keywords": [
@@ -22,7 +23,9 @@
     "windows",
     "ai-agent",
     "automation",
-    "screen-control"
+    "screen-control",
+    "accessibility",
+    "ui-automation"
   ],
   "author": "Dragos Strugar <contact@dragosstrugar.com>",
   "license": "MIT",
@@ -38,7 +41,10 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/index.js --banner:js=\"#!/usr/bin/env node\"",
+    "build": "pnpm build:native && pnpm build:js",
+    "build:js": "esbuild src/index.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/index.js --banner:js=\"#!/usr/bin/env node\"",
+    "build:native": "node scripts/build-native.js",
+    "build:native:macos": "cd native/macos && swiftc -O -o ../../bin/servo-helper-darwin-arm64 Sources/main.swift -framework Cocoa -framework CoreGraphics -framework ApplicationServices",
     "dev": "node --import tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm build"

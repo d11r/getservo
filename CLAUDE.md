@@ -23,6 +23,11 @@ servo-mcp/
 │   └── web/              # Marketing website (servo-mcp.com) - Next.js 16
 ├── packages/
 │   ├── mcp-server/       # MCP server (npm package: servo-mcp)
+│   │   ├── src/          # TypeScript source
+│   │   ├── native/       # Native binary source code
+│   │   │   ├── macos/    # Swift source for macOS
+│   │   │   └── windows/  # C# source for Windows
+│   │   └── bin/          # Compiled native binaries
 │   └── shared/           # Shared constants
 ├── pnpm-workspace.yaml
 └── turbo.json
@@ -42,7 +47,7 @@ pnpm dev:mcp          # Run MCP server in dev mode
 # Build
 pnpm build            # Build all
 pnpm build:web        # Build website
-pnpm build:mcp        # Build MCP server (bundled JS for npm)
+pnpm build:mcp        # Build MCP server (native binaries + JS bundle)
 
 # Lint
 pnpm lint             # Lint all packages
@@ -65,21 +70,25 @@ Next.js 16 with React 19 and Tailwind CSS 4.
 
 ## MCP Server (packages/mcp-server)
 
-Pure Node.js MCP server distributed as an npm package.
+Node.js MCP server with native binaries for automation.
 
 **Tech stack:**
-- Pure Node.js (no Electron)
-- @modelcontextprotocol/sdk for MCP protocol
-- esbuild for bundling
+- Node.js + @modelcontextprotocol/sdk for MCP protocol
+- Swift (macOS) and C# (Windows) native binaries for automation
+- esbuild for JS bundling
 
 **Key directories:**
 - `src/index.ts` - Entry point
 - `src/server.ts` - MCP server setup
 - `src/tools.ts` - Tool definitions and handlers
-- `src/automation/` - Platform-specific automation (macOS, Windows)
+- `src/automation/native.ts` - Native binary wrapper
+- `native/macos/` - Swift source for macOS binary
+- `native/windows/` - C# source for Windows binary
+- `bin/` - Compiled native binaries
 
 ### MCP Tools
 
+#### Coordinate-based tools
 | Tool | Description |
 |------|-------------|
 | `screenshot` | Capture screen (returns base64 image) |
@@ -94,6 +103,16 @@ Pure Node.js MCP server distributed as an npm package.
 | `list_windows` | List open windows |
 | `wait` | Wait milliseconds |
 | `request_permissions` | Open System Preferences for permissions |
+
+#### Accessibility-based tools (NEW)
+| Tool | Description |
+|------|-------------|
+| `list_ui_elements` | List UI elements (buttons, fields, etc.) with labels and bounds |
+| `click_element` | Click element by title/role/identifier (no coordinates needed) |
+| `get_element_text` | Read text content from an element |
+| `focus_element` | Focus an element (e.g., a text field) |
+
+**Accessibility tools are faster and more reliable** than screenshot + vision for UI automation.
 
 ### Claude Code Configuration
 
@@ -111,24 +130,29 @@ After running `npx servo-mcp --setup`, this is added to `~/.claude.json`:
 
 ### Automation Architecture
 
-The automation layer uses **native platform APIs only** (no external dependencies):
+The automation layer uses **pre-built native binaries** bundled with the npm package:
 
-**macOS (`src/automation/macos.ts`):**
-- Screenshots: `screencapture` CLI (built-in)
-- Mouse/keyboard: Python + Quartz CGEventPost (built-in)
-- Window management: AppleScript via `osascript`
+**macOS (`native/macos/`):**
+- Swift binary using CoreGraphics, AppKit, and Accessibility APIs
+- Single binary `servo-helper-darwin-arm64` or `servo-helper-darwin-x64`
+- No Python, no AppleScript dependencies
 
-**Windows (`src/automation/windows.ts`):**
-- Screenshots: .NET System.Drawing via PowerShell
-- Mouse/keyboard: user32.dll via PowerShell
-- Window management: PowerShell + Win32 APIs
+**Windows (`native/windows/`):**
+- C# binary using Win32 APIs and UI Automation
+- Single binary `servo-helper-win32-x64.exe`
+- No PowerShell dependencies at runtime
+
+**Binary communication:**
+- Node.js spawns the binary with command-line arguments
+- Binary returns JSON to stdout
+- Fast, reliable, no intermediate interpreters
 
 ### macOS Permissions
 
 On macOS, users must grant permissions to their **terminal app** (Terminal, iTerm, VS Code, Cursor, etc.) - not to servo-mcp itself. Child processes inherit permissions from the parent app.
 
 Required permissions in **System Settings > Privacy & Security**:
-- **Accessibility** - for clicking, typing, scrolling
+- **Accessibility** - for clicking, typing, scrolling, UI element access
 - **Screen Recording** - for screenshots
 
 ---
@@ -141,18 +165,21 @@ Required permissions in **System Settings > Privacy & Security**:
 # Install dependencies (from repo root)
 pnpm install
 
-# Run in dev mode (uses tsx for hot reload)
-pnpm dev:mcp
-
-# Or from packages/mcp-server directly:
+# Build native binaries first
 cd packages/mcp-server
+pnpm build:native
+
+# Run in dev mode (uses tsx for hot reload)
 pnpm dev
+
+# Or from repo root:
+pnpm dev:mcp
 ```
 
 ### Building and Testing Locally
 
 ```bash
-# Build the package
+# Build the package (native + JS)
 cd packages/mcp-server
 pnpm build
 
@@ -166,6 +193,16 @@ servo-mcp --setup
 servo-mcp
 ```
 
+### Testing Native Binaries
+
+```bash
+# Test macOS binary directly
+./bin/servo-helper-darwin-arm64 windows
+./bin/servo-helper-darwin-arm64 position
+./bin/servo-helper-darwin-arm64 list-elements
+./bin/servo-helper-darwin-arm64 click-element --title "OK" --role button
+```
+
 ---
 
 ## CI/CD & Releases
@@ -173,6 +210,8 @@ servo-mcp
 ### npm Publishing
 
 The release workflow (`.github/workflows/release.yml`) publishes to npm when a version tag is pushed.
+
+**Note:** Native binaries must be built on each platform. The CI workflow builds on macOS and Windows runners.
 
 ### Creating a Release
 
@@ -189,9 +228,10 @@ git push origin main --tags
 ```
 
 The workflow will:
-1. Build the package
-2. Publish to npm
-3. Create a GitHub Release
+1. Build native binaries on macOS and Windows
+2. Build the JS bundle
+3. Publish to npm
+4. Create a GitHub Release
 
 ### Website Deployment
 
@@ -204,9 +244,10 @@ The website (`apps/web`) deploys to Vercel automatically on push to `main`. No m
 | Component | Status |
 |-----------|--------|
 | Monorepo structure | Done |
-| MCP server (12 tools) | Done |
-| macOS automation | Done |
-| Windows automation | Done |
+| MCP server (16 tools) | Done |
+| macOS native binary (Swift) | Done |
+| Windows native binary (C#) | Done |
+| Accessibility API support | Done |
 | npm package publishing | Done |
 | Website (landing page) | Done |
 | GitHub Actions CI | Done |
@@ -219,3 +260,4 @@ The website (`apps/web`) deploys to Vercel automatically on push to `main`. No m
 3. Grant permissions to your terminal app (macOS only)
 4. Restart Claude Code
 5. Test: Ask Claude to take a screenshot
+6. Test accessibility: Ask Claude to list UI elements

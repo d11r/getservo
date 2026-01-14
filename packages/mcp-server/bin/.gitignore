@@ -1,0 +1,5 @@
+# Native binaries
+# These are built by the build:native script and included in the npm package.
+# Do not commit actual binaries to git.
+*
+!.gitignore

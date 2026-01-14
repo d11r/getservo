@@ -1,42 +1,18 @@
 /**
  * Platform automation abstraction layer.
  *
- * Provides a unified API for desktop automation across platforms.
- * Automatically selects the appropriate implementation based on the current platform.
+ * Uses native pre-built binaries for all automation tasks.
+ * Provides both coordinate-based and accessibility-based automation.
  */
 
-import { platform } from 'os'
+import { native, accessibility } from './native.js'
 import type { PlatformAutomation } from './types.js'
 import type { MousePosition, ScrollDirection, WindowInfo } from '../types.js'
 
-// Lazy load platform implementations to avoid loading unnecessary code
-let platformImpl: PlatformAutomation | null = null
-
-async function getPlatform(): Promise<PlatformAutomation> {
-  if (platformImpl) {
-    return platformImpl
-  }
-
-  const currentPlatform = platform()
-
-  if (currentPlatform === 'darwin') {
-    const { macos } = await import('./macos.js')
-    platformImpl = macos
-  } else if (currentPlatform === 'win32') {
-    const { windows } = await import('./windows.js')
-    platformImpl = windows
-  } else {
-    throw new Error(`Unsupported platform: ${currentPlatform}. Servo only supports macOS and Windows.`)
-  }
-
-  return platformImpl
-}
-
-// Export unified API
+// Export unified API using native implementation
 
 export async function screenshot(): Promise<Buffer> {
-  const impl = await getPlatform()
-  return impl.screenshot()
+  return native.screenshot()
 }
 
 export async function click(
@@ -45,54 +21,63 @@ export async function click(
   button: 'left' | 'right' | 'middle' = 'left',
   clicks = 1
 ): Promise<void> {
-  const impl = await getPlatform()
-  return impl.click(x, y, button, clicks)
+  return native.click(x, y, button, clicks)
 }
 
 export async function typeText(text: string): Promise<void> {
-  const impl = await getPlatform()
-  return impl.typeText(text)
+  return native.typeText(text)
 }
 
 export async function keyPress(key: string, modifiers: string[] = []): Promise<void> {
-  const impl = await getPlatform()
-  return impl.keyPress(key, modifiers)
+  return native.keyPress(key, modifiers)
 }
 
 export async function scroll(direction: ScrollDirection, amount = 3): Promise<void> {
-  const impl = await getPlatform()
-  return impl.scroll(direction, amount)
+  return native.scroll(direction, amount)
 }
 
 export async function moveMouse(x: number, y: number): Promise<void> {
-  const impl = await getPlatform()
-  return impl.moveMouse(x, y)
+  return native.moveMouse(x, y)
 }
 
 export async function getMousePosition(): Promise<MousePosition> {
-  const impl = await getPlatform()
-  return impl.getMousePosition()
+  return native.getMousePosition()
 }
 
 export async function focusApp(appName: string): Promise<void> {
-  const impl = await getPlatform()
-  return impl.focusApp(appName)
+  return native.focusApp(appName)
 }
 
 export async function openApp(appName: string): Promise<void> {
-  const impl = await getPlatform()
-  return impl.openApp(appName)
+  return native.openApp(appName)
 }
 
 export async function listWindows(): Promise<WindowInfo[]> {
-  const impl = await getPlatform()
-  return impl.listWindows()
+  return native.listWindows()
 }
 
 export async function wait(ms: number): Promise<void> {
-  const impl = await getPlatform()
-  return impl.wait(ms)
+  return native.wait(ms)
 }
 
-// Re-export types
+// Export accessibility-based automation
+export { accessibility }
+
+// Export types
 export type { PlatformAutomation } from './types.js'
+
+// UI Element type for accessibility
+export interface UIElement {
+  role: string
+  title: string
+  bounds: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+  identifier?: string
+  description?: string
+  value?: string
+  enabled?: boolean
+}
