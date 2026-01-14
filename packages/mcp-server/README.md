@@ -71,8 +71,8 @@ Restart Claude Code and test with: "take a screenshot"
 
 ## Links
 
-- **Website:** [getservo.app](https://getservo.app)
-- **GitHub:** [github.com/d11r/getservo](https://github.com/d11r/getservo)
+- **Website:** [servo-mcp.com](https://servo-mcp.com)
+- **GitHub:** [github.com/d11r/servo-mcp](https://github.com/d11r/servo-mcp)
 
 ## License
 

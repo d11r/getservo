@@ -11,16 +11,16 @@ Servo is an MCP (Model Context Protocol) server that gives AI agents the ability
 - Fully local - no telemetry, no cloud, no data sharing
 - Built for agentic workflows, primarily verifying software after implementation
 - Distributed as an npm package (`servo-mcp`)
-- Author: d11r (Dragos Strugar) - github.com/d11r/servo
+- Author: d11r (Dragos Strugar) - github.com/d11r/servo-mcp
 
 ## Repository Structure
 
 This is a **pnpm monorepo** containing:
 
 ```
-getservo/
+servo-mcp/
 ├── apps/
-│   └── web/              # Marketing website (getservo.app) - Next.js 16
+│   └── web/              # Marketing website (servo-mcp.com) - Next.js 16
 ├── packages/
 │   ├── mcp-server/       # MCP server (npm package: servo-mcp)
 │   └── shared/           # Shared constants
@@ -58,7 +58,6 @@ Next.js 16 with React 19 and Tailwind CSS 4.
 
 **Key files:**
 - `app/page.tsx` - Landing page
-- `app/download/page.tsx` - Installation page (npm instructions)
 - `app/globals.css` - Tailwind v4 styles with `@import "tailwindcss"` and `@theme inline`
 - `components/` - Reusable components (Hero, Features, Footer, etc.)
 

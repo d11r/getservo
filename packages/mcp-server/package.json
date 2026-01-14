@@ -28,11 +28,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/d11r/getservo.git"
+    "url": "git+https://github.com/d11r/servo-mcp.git"
   },
-  "homepage": "https://getservo.app",
+  "homepage": "https://servo-mcp.com",
   "bugs": {
-    "url": "https://github.com/d11r/getservo/issues"
+    "url": "https://github.com/d11r/servo-mcp/issues"
   },
   "engines": {
     "node": ">=18"

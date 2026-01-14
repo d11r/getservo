@@ -39,11 +39,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Dragos Strugar", url: "https://dragosstrugar.com" }],
   creator: "Dragos Strugar",
-  metadataBase: new URL("https://getservo.app"),
+  metadataBase: new URL("https://servo-mcp.com"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://getservo.app",
+    url: "https://servo-mcp.com",
     siteName: "servo-mcp",
     title: "servo-mcp - Desktop MCP Server for AI Agents",
     description:

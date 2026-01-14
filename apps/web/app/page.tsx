@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { GITHUB_URL } from "@servo/shared";
+
+const GITHUB_URL = "https://github.com/d11r/servo-mcp";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -98,7 +99,18 @@ export default function Home() {
             <CodeBlock code="npx servo-mcp --setup" label="2. Setup Claude Code" />
           </div>
           <p className="text-center text-xs text-muted mt-4">
-            Then restart Claude Code and try: &quot;take a screenshot&quot;
+            Restart Claude Code after setup.
+          </p>
+        </section>
+
+        {/* Verify Setup */}
+        <section className="py-8 border-t border-foreground/10">
+          <h2 className="text-lg font-semibold mb-3">Verify Setup</h2>
+          <p className="text-sm text-muted mb-3">
+            After restarting Claude Code, run <code className="bg-foreground/10 px-1.5 py-0.5 rounded">/mcp</code> to see the list of connected MCP servers.
+          </p>
+          <p className="text-sm text-muted mb-3">
+            You should see <strong className="text-foreground">servo</strong> in the list. Try: <em>&quot;take a screenshot&quot;</em>
           </p>
         </section>
 
@@ -116,6 +128,42 @@ export default function Home() {
           <p className="text-xs text-muted mt-2">
             Child processes inherit permissions from the parent terminal.
           </p>
+        </section>
+
+        {/* Troubleshooting */}
+        <section className="py-8 border-t border-foreground/10">
+          <h2 className="text-lg font-semibold mb-3">Troubleshooting</h2>
+
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="text-muted mb-2">
+                <strong className="text-foreground">servo not in /mcp list?</strong>
+              </p>
+              <ul className="text-muted space-y-1 ml-4">
+                <li>• Make sure you ran <code className="bg-foreground/10 px-1.5 py-0.5 rounded">npx servo-mcp --setup</code></li>
+                <li>• Restart Claude Code completely</li>
+                <li>• Run <code className="bg-foreground/10 px-1.5 py-0.5 rounded">claude --mcp-debug</code> to see connection errors</li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-muted mb-2">
+                <strong className="text-foreground">npx not found?</strong>
+              </p>
+              <p className="text-muted ml-4">
+                Install Node.js from <a href="https://nodejs.org" className="underline hover:text-foreground">nodejs.org</a> (includes npm and npx)
+              </p>
+            </div>
+
+            <div>
+              <p className="text-muted mb-2">
+                <strong className="text-foreground">Manual config (last resort)</strong>
+              </p>
+              <p className="text-muted ml-4">
+                Edit <code className="bg-foreground/10 px-1.5 py-0.5 rounded">~/.claude.json</code> directly and add the config below.
+              </p>
+            </div>
+          </div>
         </section>
 
         {/* Config */}

@@ -37,6 +37,6 @@ export type ScrollDirection = 'up' | 'down' | 'left' | 'right'
 export type KeyModifier = 'ctrl' | 'alt' | 'shift' | 'meta' | 'cmd'
 
 // Constants
-export const APP_NAME = 'Servo'
-export const APP_ID = 'app.getservo.servo'
-export const VERSION = '0.1.0'
+export const APP_NAME = 'servo-mcp'
+export const APP_ID = 'com.servo-mcp'
+export const VERSION = '0.3.5'

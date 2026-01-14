@@ -2,7 +2,7 @@
 
 A desktop MCP server that gives AI agents the ability to see and control your desktop.
 
-**[getservo.app](https://getservo.app)** - Installation instructions and documentation
+**[servo-mcp.com](https://servo-mcp.com)** - Installation instructions and documentation
 
 ## What is Servo?
 
@@ -96,9 +96,9 @@ Servo is a pure Node.js MCP server that uses:
 
 ## Links
 
-- **Website:** [getservo.app](https://getservo.app)
+- **Website:** [servo-mcp.com](https://servo-mcp.com)
 - **npm:** [npmjs.com/package/servo-mcp](https://www.npmjs.com/package/servo-mcp)
-- **GitHub:** [github.com/d11r/getservo](https://github.com/d11r/getservo)
+- **GitHub:** [github.com/d11r/servo-mcp](https://github.com/d11r/servo-mcp)
 
 ## License
 
