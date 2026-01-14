@@ -35,7 +35,7 @@ jobs:
       - name: Publish to npm
         run: |
           cd packages/mcp-server
-          npm publish --access public
+          npm publish --access public --provenance
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
