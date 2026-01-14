@@ -1,4 +1,4 @@
-import type { MousePosition, ScrollDirection, WindowInfo } from '@servo/shared'
+import type { MousePosition, ScrollDirection, WindowInfo } from './types.js'
 
 /**
  * Platform automation interface.
@@ -37,21 +37,4 @@ export interface PlatformAutomation {
 
   /** Wait for a specified duration */
   wait(ms: number): Promise<void>
-}
-
-/**
- * Key mapping for keyboard input.
- * Maps common key names to platform-specific representations.
- */
-export interface KeyMapping {
-  [key: string]: string
-}
-
-/**
- * Result of a command execution.
- */
-export interface CommandResult {
-  stdout: string
-  stderr: string
-  exitCode: number
 }

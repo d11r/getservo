@@ -7,15 +7,14 @@
  * - System Events for UI automation
  */
 
-import { exec, execFile } from 'child_process'
+import { execFile } from 'child_process'
 import { promisify } from 'util'
 import { readFile, unlink } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import type { PlatformAutomation } from './types'
-import type { MousePosition, ScrollDirection, WindowInfo } from '@servo/shared'
+import type { PlatformAutomation } from './types.js'
+import type { MousePosition, ScrollDirection, WindowInfo } from '../types.js'
 
-const execAsync = promisify(exec)
 const execFileAsync = promisify(execFile)
 
 /**
@@ -26,20 +25,12 @@ async function runAppleScript(script: string): Promise<string> {
   return stdout.trim()
 }
 
-/**
- * Execute JavaScript for Automation (JXA) code.
- */
-async function runJxa(script: string): Promise<string> {
-  const { stdout } = await execFileAsync('osascript', ['-l', 'JavaScript', '-e', script])
-  return stdout.trim()
-}
-
 export const macos: PlatformAutomation = {
   async screenshot(): Promise<Buffer> {
     const tempPath = join(tmpdir(), `servo-screenshot-${Date.now()}.png`)
 
     try {
-      // -x: no sound, -t png: format, -C: capture cursor
+      // -x: no sound, -t png: format
       await execFileAsync('screencapture', ['-x', '-t', 'png', tempPath])
       const buffer = await readFile(tempPath)
       return buffer
@@ -62,7 +53,6 @@ export const macos: PlatformAutomation = {
     // Use AppleScript with System Events for clicking
     // Note: This requires Accessibility permission
     const clickType = button === 'right' ? 'right' : 'left'
-    const clickCount = clicks === 2 ? 'double' : ''
 
     // First move the mouse, then click
     const script = `

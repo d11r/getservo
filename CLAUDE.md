@@ -10,7 +10,7 @@ Servo is an MCP (Model Context Protocol) server that gives AI agents the ability
 - Free and open source (MIT License)
 - Fully local - no telemetry, no cloud, no data sharing
 - Built for agentic workflows, primarily verifying software after implementation
-- Packaged as a desktop app to handle macOS/Windows permission requirements
+- Packaged as a macOS .app bundle (using Node.js SEA) for proper permission handling
 - Author: d11r (Dragos Strugar) - github.com/d11r/servo
 
 ## Repository Structure
@@ -20,10 +20,10 @@ This is a **pnpm monorepo** containing:
 ```
 getservo/
 ├── apps/
-│   ├── web/          # Marketing website (getservo.app) - Next.js 16
-│   └── desktop/      # Electron desktop app with MCP server
+│   └── web/              # Marketing website (getservo.app) - Next.js 16
 ├── packages/
-│   └── shared/       # Shared types and constants
+│   ├── mcp-server/       # MCP server (pure Node.js, builds to standalone binary)
+│   └── shared/           # Shared constants
 ├── pnpm-workspace.yaml
 └── turbo.json
 ```
@@ -37,12 +37,14 @@ pnpm install
 # Development
 pnpm dev              # Run all apps in dev mode
 pnpm dev:web          # Run website only (http://localhost:3000)
-pnpm dev:desktop      # Run desktop app only
+pnpm dev:mcp          # Run MCP server in dev mode
 
 # Build
 pnpm build            # Build all
 pnpm build:web        # Build website
-pnpm build:desktop    # Build desktop app for current platform
+pnpm build:mcp        # Build MCP server (bundled JS)
+pnpm build:mcp:sea    # Build MCP server as standalone binary (Node.js SEA)
+pnpm build:mcp:app    # Build macOS .app bundle
 
 # Lint
 pnpm lint             # Lint all packages
@@ -60,29 +62,30 @@ Next.js 16 with React 19 and Tailwind CSS 4.
 
 **Path alias:** `@/*` maps to project root.
 
-## Desktop App (apps/desktop)
+## MCP Server (packages/mcp-server)
 
-Electron app that runs in two modes:
-- **GUI Mode** (default): Status window, system tray, permission management
-- **MCP Mode** (`--mcp` flag): Headless stdio server for Claude Code
+Pure Node.js MCP server that builds to a standalone binary using Node.js Single Executable Application (SEA) feature, then wrapped in a macOS .app bundle.
 
 **Tech stack:**
-- Electron 28+ with electron-vite
-- electron-updater for auto-updates
-- Native platform APIs (no external automation dependencies)
+- Pure Node.js (no Electron)
+- Node.js SEA for standalone binary
 - @modelcontextprotocol/sdk for MCP protocol
+- esbuild for bundling
 
 **Key directories:**
-- `src/main/` - Electron main process (window, tray, permissions, ipc)
-- `src/renderer/` - React UI for status/permissions
-- `src/mcp/` - MCP server and tool implementations
-- `src/mcp/automation/` - Platform-specific automation (macOS, Windows)
+- `src/index.ts` - Entry point
+- `src/server.ts` - MCP server setup
+- `src/tools.ts` - Tool definitions and handlers
+- `src/automation/` - Platform-specific automation (macOS, Windows)
+- `scripts/build-sea.js` - Build standalone binary
+- `scripts/build-app.js` - Create macOS .app bundle
+- `install-local.sh` - Quick install script
 
 ### MCP Tools
 
 | Tool | Description |
 |------|-------------|
-| `screenshot` | Capture screen or window (returns base64 image) |
+| `screenshot` | Capture screen (returns base64 image) |
 | `click` | Click at x,y (left/right/double) |
 | `type_text` | Type text at cursor |
 | `key_press` | Press key combo (e.g., Cmd+S) |
@@ -93,16 +96,16 @@ Electron app that runs in two modes:
 | `open_app` | Launch application |
 | `list_windows` | List open windows |
 | `wait` | Wait milliseconds |
+| `request_permissions` | Open System Preferences for permissions |
 
 ### Claude Code Configuration
 
-Add to `~/.claude.json`:
+Add to `~/.claude.json` or project `.mcp.json`:
 ```json
 {
   "mcpServers": {
     "servo": {
-      "command": "/Applications/Servo.app/Contents/MacOS/Servo",
-      "args": ["--mcp"]
+      "command": "/Applications/Servo.app/Contents/MacOS/Servo"
     }
   }
 }
@@ -110,94 +113,94 @@ Add to `~/.claude.json`:
 
 ### Automation Architecture
 
-The automation layer uses **native platform APIs only** (no external dependencies like nut-js or robotjs):
+The automation layer uses **native platform APIs only** (no external dependencies):
 
-**macOS (`src/mcp/automation/macos.ts`):**
+**macOS (`src/automation/macos.ts`):**
 - Screenshots: `screencapture` CLI (built-in)
 - Mouse/keyboard: Python + Quartz CGEventPost (built-in)
 - Window management: AppleScript via `osascript`
 
-**Windows (`src/mcp/automation/windows.ts`):**
+**Windows (`src/automation/windows.ts`):**
 - Screenshots: .NET System.Drawing via PowerShell
 - Mouse/keyboard: user32.dll via PowerShell
 - Window management: PowerShell + Win32 APIs
 
-**Interface (`src/mcp/automation/types.ts`):**
-Defines `PlatformAutomation` interface that both platforms implement.
-
-### Why a Desktop App?
+### Why a .app Bundle?
 
 macOS requires explicit user permission for:
 - **Accessibility** - clicking, typing, scrolling
 - **Screen Recording** - screenshots
 
-A proper app bundle appears in System Preferences, allowing users to grant these permissions elegantly.
+A proper app bundle appears in System Preferences, allowing users to grant these permissions. The app is built using Node.js SEA (Single Executable Application) which embeds Node.js into a standalone binary.
 
 ---
 
-# Implementation Plan
+## Development
 
-## Phases
+### Running the MCP Server Locally
 
-### Phase 1: Monorepo Setup ✅ COMPLETE
-1. Move current Next.js app to `apps/web/`
-2. Create `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`
-3. Create `packages/shared/` with types
-4. Update root `package.json` with workspace scripts
+```bash
+# Install dependencies (from repo root)
+pnpm install
 
-### Phase 2: Website Update
-5. Create landing page components (Hero, Features, Footer)
-6. Implement download page with platform detection
-7. Update styling and branding
-8. Add author credit (d11r / Dragos Strugar)
+# Run in dev mode (uses tsx for hot reload)
+pnpm dev:mcp
 
-### Phase 3: Desktop App Foundation ✅ COMPLETE
-9. Initialize Electron app in `apps/desktop/`
-10. Set up electron-vite build config
-11. Create main window and system tray
-12. Implement permission checking (macOS)
-13. Create permission request UI
+# Or from packages/mcp-server directly:
+cd packages/mcp-server
+pnpm dev
+```
 
-### Phase 4: MCP Server Implementation ✅ COMPLETE
-14. Set up MCP SDK with stdio transport
-15. Implement core tools: `screenshot`, `click`, `type_text`, `key_press`, `scroll`, `move_mouse`, `get_mouse_position`
-16. Implement app tools: `focus_app`, `open_app`, `list_windows`, `wait`
+### Building the .app Bundle
 
-### Phase 5: Platform Implementation ✅ COMPLETE
-17. macOS automation (screencapture, Python+Quartz, AppleScript)
-18. Windows automation (PowerShell, user32.dll, .NET)
+```bash
+# Full build process:
+pnpm install
+pnpm build:mcp          # Bundle with esbuild
+pnpm build:mcp:sea      # Create standalone binary with Node.js SEA
+pnpm build:mcp:app      # Create .app bundle
 
-### Phase 6: Build & Release
-19. Configure electron-builder for both platforms
-20. Set up GitHub Actions for releases
-21. macOS code signing and notarization
-22. Configure electron-updater for auto-updates
+# Or all at once from packages/mcp-server:
+cd packages/mcp-server
+pnpm build && pnpm build:sea && node scripts/build-app.js
+```
 
-## Website Content
+### Installing the .app
 
-**Landing page sections:**
-1. Hero - "Give AI the ability to see and control your desktop"
-2. How It Works (3 steps)
-3. Features Grid
-4. Open Source Banner - "100% local, no telemetry, no cloud"
-5. Quick Setup code snippet
-6. Footer with GitHub link
+```bash
+# Quick install (from packages/mcp-server)
+./install-local.sh
 
-**Download page:**
-- Auto-detect platform (Mac Intel/ARM, Windows)
-- Setup instructions with Claude Code config
+# Or manually:
+cp -r packages/mcp-server/build/Servo.app /Applications/
 
-## Configuration
+# Grant permissions in System Settings > Privacy & Security:
+# - Accessibility
+# - Screen Recording
+# - Automation (for System Events)
+```
 
-- **Package manager**: pnpm
-- **Code signing**: Apple Developer account available
-- **GitHub**: d11r/servo
-- **Auto-update**: Yes, via electron-updater
+---
 
-## Verification
+## Implementation Status
 
-**Test MCP:** Build desktop app → Add to Claude Code config → Ask Claude to take screenshot
+| Component | Status |
+|-----------|--------|
+| Monorepo structure | ✅ Complete |
+| MCP server (12 tools) | ✅ Complete |
+| macOS automation | ✅ Complete |
+| Windows automation | ✅ Complete |
+| Node.js SEA build | ✅ Complete |
+| .app bundle generator | ✅ Complete |
+| Website (landing page) | ⏳ Needs update |
+| GitHub Actions CI | ⏳ Not started |
+| Code signing & notarization | ⏳ Not started |
 
-**Test Website:** Run `pnpm dev:web` → Check landing page → Test platform detection
+## Verification Checklist
 
-**Test Desktop:** Open in GUI mode → Check permissions → Grant permissions → Verify tray works
+**MCP Server:**
+1. Build: `pnpm build:mcp && pnpm build:mcp:sea && pnpm build:mcp:app`
+2. Install: `cp -r packages/mcp-server/build/Servo.app /Applications/`
+3. Grant permissions in System Settings
+4. Add to Claude Code config
+5. Test: Ask Claude to take a screenshot

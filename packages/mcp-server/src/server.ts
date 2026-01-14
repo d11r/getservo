@@ -4,14 +4,14 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema
 } from '@modelcontextprotocol/sdk/types.js'
-import { APP_NAME } from '@servo/shared'
-import { toolDefinitions, handleToolCall } from './tools'
+import { APP_NAME, VERSION } from './types.js'
+import { toolDefinitions, handleToolCall } from './tools.js'
 
 export async function startMcpServer(): Promise<void> {
   const server = new Server(
     {
       name: APP_NAME.toLowerCase(),
-      version: '0.1.0'
+      version: VERSION
     },
     {
       capabilities: {

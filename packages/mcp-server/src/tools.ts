@@ -1,13 +1,33 @@
-import { Tool, TextContent, ImageContent } from '@modelcontextprotocol/sdk/types.js'
-import * as automation from '../automation'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import * as automation from './automation/index.js'
+import { APP_NAME } from './types.js'
 
-// Tool definitions
-export const toolDefinitions: Tool[] = [
+const execAsync = promisify(exec)
+
+// Tool definitions for MCP
+export const toolDefinitions = [
+  {
+    name: 'request_permissions',
+    description:
+      'Open macOS System Preferences to grant required permissions (Accessibility, Screen Recording, Automation). Call this if you get permission errors.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        permission: {
+          type: 'string',
+          enum: ['accessibility', 'screen_recording', 'automation', 'all'],
+          default: 'all',
+          description: 'Which permission to request'
+        }
+      }
+    }
+  },
   {
     name: 'screenshot',
     description: 'Capture a screenshot of the entire screen. Returns the image as base64 PNG.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         format: {
           type: 'string',
@@ -22,7 +42,7 @@ export const toolDefinitions: Tool[] = [
     name: 'click',
     description: 'Click at screen coordinates. Coordinates are in pixels from top-left.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         x: { type: 'number', description: 'X coordinate in pixels' },
         y: { type: 'number', description: 'Y coordinate in pixels' },
@@ -45,7 +65,7 @@ export const toolDefinitions: Tool[] = [
     name: 'type_text',
     description: 'Type text at the current cursor position.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         text: { type: 'string', description: 'Text to type' }
       },
@@ -57,7 +77,7 @@ export const toolDefinitions: Tool[] = [
     description:
       'Press a keyboard key with optional modifiers. For shortcuts like Cmd+S, use modifiers.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         key: {
           type: 'string',
@@ -79,7 +99,7 @@ export const toolDefinitions: Tool[] = [
     name: 'scroll',
     description: 'Scroll in a direction at the current mouse position.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         direction: {
           type: 'string',
@@ -99,7 +119,7 @@ export const toolDefinitions: Tool[] = [
     name: 'move_mouse',
     description: 'Move the mouse cursor to screen coordinates.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         x: { type: 'number', description: 'X coordinate in pixels' },
         y: { type: 'number', description: 'Y coordinate in pixels' }
@@ -111,7 +131,7 @@ export const toolDefinitions: Tool[] = [
     name: 'get_mouse_position',
     description: 'Get the current mouse cursor position.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {}
     }
   },
@@ -119,7 +139,7 @@ export const toolDefinitions: Tool[] = [
     name: 'focus_app',
     description: 'Bring an application to the foreground.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         app: {
           type: 'string',
@@ -133,7 +153,7 @@ export const toolDefinitions: Tool[] = [
     name: 'open_app',
     description: 'Launch an application.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         app: {
           type: 'string',
@@ -147,7 +167,7 @@ export const toolDefinitions: Tool[] = [
     name: 'list_windows',
     description: 'List all open windows with their app names and titles.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {}
     }
   },
@@ -155,7 +175,7 @@ export const toolDefinitions: Tool[] = [
     name: 'wait',
     description: 'Wait for a specified duration before continuing.',
     inputSchema: {
-      type: 'object',
+      type: 'object' as const,
       properties: {
         ms: {
           type: 'number',
@@ -167,6 +187,17 @@ export const toolDefinitions: Tool[] = [
   }
 ]
 
+interface TextContent {
+  type: 'text'
+  text: string
+}
+
+interface ImageContent {
+  type: 'image'
+  data: string
+  mimeType: string
+}
+
 // Tool call handler
 export async function handleToolCall(
   name: string,
@@ -174,6 +205,43 @@ export async function handleToolCall(
 ): Promise<{ content: (TextContent | ImageContent)[] }> {
   try {
     switch (name) {
+      case 'request_permissions': {
+        const permission = (args.permission as string) || 'all'
+
+        // Open System Preferences to the appropriate pane
+        if (permission === 'accessibility' || permission === 'all') {
+          await execAsync(
+            'open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"'
+          )
+        }
+        if (permission === 'screen_recording' || permission === 'all') {
+          await execAsync(
+            'open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"'
+          )
+        }
+        if (permission === 'automation' || permission === 'all') {
+          await execAsync(
+            'open "x-apple.systempreferences:com.apple.preference.security?Privacy_Automation"'
+          )
+        }
+
+        const instructions = `
+System Preferences has been opened. Please:
+
+1. **Accessibility**: Find "${APP_NAME}" (or Terminal/iTerm if running from terminal) in the list and enable it.
+
+2. **Screen Recording**: Find "${APP_NAME}" (or Terminal/iTerm) and enable it.
+
+3. **Automation**: Find "${APP_NAME}" (or Terminal/iTerm) and enable access to "System Events" and other apps you want to control.
+
+After granting permissions, you may need to restart Claude Code for changes to take effect.
+`.trim()
+
+        return {
+          content: [{ type: 'text', text: instructions }]
+        }
+      }
+
       case 'screenshot': {
         const buffer = await automation.screenshot()
         const base64 = buffer.toString('base64')

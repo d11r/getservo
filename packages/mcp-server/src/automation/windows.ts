@@ -11,8 +11,8 @@ import { promisify } from 'util'
 import { readFile, unlink } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import type { PlatformAutomation } from './types'
-import type { MousePosition, ScrollDirection, WindowInfo } from '@servo/shared'
+import type { PlatformAutomation } from './types.js'
+import type { MousePosition, ScrollDirection, WindowInfo } from '../types.js'
 
 const execAsync = promisify(exec)
 
@@ -63,6 +63,19 @@ export const windows: PlatformAutomation = {
     clicks = 1
   ): Promise<void> {
     // Use user32.dll via PowerShell for mouse control
+    const clickEvents = Array(clicks)
+      .fill(null)
+      .map(() => {
+        if (button === 'right') {
+          return `[Mouse]::mouse_event([Mouse]::MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0); [Mouse]::mouse_event([Mouse]::MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0)`
+        } else if (button === 'middle') {
+          return `[Mouse]::mouse_event([Mouse]::MOUSEEVENTF_MIDDLEDOWN, 0, 0, 0, 0); [Mouse]::mouse_event([Mouse]::MOUSEEVENTF_MIDDLEUP, 0, 0, 0, 0)`
+        } else {
+          return `[Mouse]::mouse_event([Mouse]::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0); [Mouse]::mouse_event([Mouse]::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)`
+        }
+      })
+      .join('; Start-Sleep -Milliseconds 10; ')
+
     const script = `
       Add-Type -TypeDefinition @'
         using System;
@@ -82,18 +95,7 @@ export const windows: PlatformAutomation = {
 '@
       [Mouse]::SetCursorPos(${Math.round(x)}, ${Math.round(y)})
       Start-Sleep -Milliseconds 10
-      ${Array(clicks)
-        .fill(null)
-        .map(() => {
-          if (button === 'right') {
-            return `[Mouse]::mouse_event([Mouse]::MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0); [Mouse]::mouse_event([Mouse]::MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0)`
-          } else if (button === 'middle') {
-            return `[Mouse]::mouse_event([Mouse]::MOUSEEVENTF_MIDDLEDOWN, 0, 0, 0, 0); [Mouse]::mouse_event([Mouse]::MOUSEEVENTF_MIDDLEUP, 0, 0, 0, 0)`
-          } else {
-            return `[Mouse]::mouse_event([Mouse]::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0); [Mouse]::mouse_event([Mouse]::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)`
-          }
-        })
-        .join('; Start-Sleep -Milliseconds 10; ')}
+      ${clickEvents}
     `
     await runPowerShell(script)
   },

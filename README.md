@@ -1,151 +1,119 @@
 # Servo
 
-A desktop MCP server for AI agents. Gives Claude Code the tools to see your screen, click buttons, type text, and verify its work on macOS and Windows.
+A desktop MCP server that gives AI agents the ability to see and control your desktop.
 
-**Open source. 100% local. No telemetry.**
+**[getservo.app](https://getservo.app)** - Download, documentation, and more info
 
 ## What is Servo?
 
-Servo is an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that provides desktop automation tools. When connected to Claude Code, it enables AI to:
+Servo is an [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that enables Claude Code and other AI agents to:
 
-- Take screenshots to see your desktop
+- Take screenshots of your screen
 - Click buttons and interact with UI elements
-- Type text and use keyboard shortcuts
-- Scroll, navigate, and control applications
-- Verify that code changes actually work
+- Type text and press keyboard shortcuts
+- Scroll and navigate applications
+- Verify that changes actually work
 
-## Why a Desktop App?
+**Key features:**
+- 100% local - no cloud, no telemetry, no data sharing
+- Works on macOS and Windows
+- Pure Node.js with native platform APIs (no Electron, no external dependencies)
+- Simple setup with Claude Code
 
-macOS and Windows require explicit user permission for screen recording and accessibility features. A proper app bundle appears in System Preferences, allowing users to grant these permissions elegantly.
+## Installation
 
-## Repository Structure
+Download the latest release from **[getservo.app/download](https://getservo.app/download)**
 
-This is a **pnpm monorepo** containing:
-
-```
-getservo/
-├── apps/
-│   ├── web/          # Marketing website (getservo.app) - Next.js
-│   └── desktop/      # Electron desktop app with MCP server
-├── packages/
-│   └── shared/       # Shared types and constants
-├── pnpm-workspace.yaml
-└── turbo.json
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20+
-- pnpm 9+
-
-### Installation
-
+Or build from source:
 ```bash
-# Clone the repository
-git clone https://github.com/d11r/servo.git
-cd servo
-
-# Install dependencies
 pnpm install
+pnpm build:mcp:sea    # Build standalone binary
+pnpm build:mcp:app    # Create .app bundle
+cp -r packages/mcp-server/build/Servo.app /Applications/
 ```
 
-### Development
+After installing, grant the required permissions (macOS only):
+- **Accessibility** - for mouse clicks and keyboard input
+- **Screen Recording** - for taking screenshots
+- **Automation** - for controlling System Events
 
-```bash
-# Run all apps in dev mode
-pnpm dev
+## Setup with Claude Code
 
-# Run website only (http://localhost:3000)
-pnpm dev:web
+Add to your `~/.claude.json` or project `.mcp.json`:
 
-# Run desktop app only
-pnpm dev:desktop
+```json
+{
+  "mcpServers": {
+    "servo": {
+      "command": "/Applications/Servo.app/Contents/MacOS/Servo"
+    }
+  }
+}
 ```
 
-### Build
-
-```bash
-# Build all
-pnpm build
-
-# Build website
-pnpm build:web
-
-# Build desktop app for current platform
-pnpm build:desktop
+For Windows:
+```json
+{
+  "mcpServers": {
+    "servo": {
+      "command": "C:\\Program Files\\Servo\\Servo.exe"
+    }
+  }
+}
 ```
 
-## MCP Tools
+See **[getservo.app](https://getservo.app)** for detailed setup instructions.
+
+## Available Tools
 
 | Tool | Description |
 |------|-------------|
-| `screenshot` | Capture screen or window (returns base64 image) |
-| `click` | Click at x,y coordinates (left/right/double) |
-| `type_text` | Type text at cursor position |
-| `key_press` | Press keyboard shortcut (e.g., Cmd+S) |
+| `screenshot` | Capture screen |
+| `click` | Click at x,y coordinates |
+| `type_text` | Type text at cursor |
+| `key_press` | Press key combo (e.g., Cmd+S) |
 | `scroll` | Scroll up/down/left/right |
 | `move_mouse` | Move cursor to x,y |
-| `get_mouse_position` | Get current cursor position |
-| `focus_app` | Bring application to foreground |
-| `open_app` | Launch an application |
-| `list_windows` | List all open windows |
-| `wait` | Wait for specified milliseconds |
+| `get_mouse_position` | Get cursor position |
+| `focus_app` | Bring app to foreground |
+| `open_app` | Launch application |
+| `list_windows` | List open windows |
+| `wait` | Wait milliseconds |
+| `request_permissions` | Open System Preferences |
 
-## Claude Code Configuration
+## Development
 
-Add to your Claude Code settings (`~/.claude.json`):
+```bash
+pnpm install
+pnpm dev:mcp          # Run MCP server in dev mode
+pnpm dev:web          # Run website
 
-```json
-{
-  "mcpServers": {
-    "servo": {
-      "command": "/Applications/Servo.app/Contents/MacOS/Servo",
-      "args": ["--mcp"]
-    }
-  }
-}
+# Build
+pnpm build:mcp        # Bundle with esbuild
+pnpm build:mcp:sea    # Build standalone binary (Node.js SEA)
+pnpm build:mcp:app    # Create macOS .app bundle
 ```
 
-On Windows:
-```json
-{
-  "mcpServers": {
-    "servo": {
-      "command": "C:\\Program Files\\Servo\\Servo.exe",
-      "args": ["--mcp"]
-    }
-  }
-}
-```
+## Architecture
 
-## Permissions
+Servo is a pure Node.js MCP server that uses:
+- **Node.js SEA** (Single Executable Application) to create a standalone binary
+- **Native platform APIs** for automation (no Electron)
+- macOS: `screencapture`, AppleScript, Python/Quartz
+- Windows: PowerShell, .NET, user32.dll
 
-### macOS
+The .app bundle is required on macOS for proper permission handling in System Preferences.
 
-Servo requires two permissions:
+## Links
 
-1. **Screen Recording** - For taking screenshots
-2. **Accessibility** - For mouse clicks, keyboard input, and scrolling
-
-The app will guide you through granting these permissions on first launch.
-
-### Windows
-
-Run the app as Administrator for full functionality.
-
-## Tech Stack
-
-- **Desktop App**: Electron + electron-vite
-- **Website**: Next.js 15 + React 19 + Tailwind CSS 4
-- **MCP SDK**: @modelcontextprotocol/sdk
-- **Automation**: Native APIs (screencapture, Quartz, AppleScript on macOS; PowerShell, Win32 on Windows)
+- **Website:** [getservo.app](https://getservo.app)
+- **Download:** [getservo.app/download](https://getservo.app/download)
+- **GitHub:** [github.com/d11r/getservo](https://github.com/d11r/getservo)
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License
 
 ## Author
 
-Created by [Dragos Strugar](https://dragosstrugar.com) ([@d11r](https://github.com/d11r))
+Created by [Dragos Strugar](https://github.com/d11r)

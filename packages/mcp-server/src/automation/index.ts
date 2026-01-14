@@ -6,8 +6,8 @@
  */
 
 import { platform } from 'os'
-import type { PlatformAutomation } from './types'
-import type { MousePosition, ScrollDirection, WindowInfo } from '@servo/shared'
+import type { PlatformAutomation } from './types.js'
+import type { MousePosition, ScrollDirection, WindowInfo } from '../types.js'
 
 // Lazy load platform implementations to avoid loading unnecessary code
 let platformImpl: PlatformAutomation | null = null
@@ -20,10 +20,10 @@ async function getPlatform(): Promise<PlatformAutomation> {
   const currentPlatform = platform()
 
   if (currentPlatform === 'darwin') {
-    const { macos } = await import('./macos')
+    const { macos } = await import('./macos.js')
     platformImpl = macos
   } else if (currentPlatform === 'win32') {
-    const { windows } = await import('./windows')
+    const { windows } = await import('./windows.js')
     platformImpl = windows
   } else {
     throw new Error(`Unsupported platform: ${currentPlatform}. Servo only supports macOS and Windows.`)
@@ -95,4 +95,4 @@ export async function wait(ms: number): Promise<void> {
 }
 
 // Re-export types
-export type { PlatformAutomation } from './types'
+export type { PlatformAutomation } from './types.js'
